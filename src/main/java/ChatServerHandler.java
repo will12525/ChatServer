@@ -1,53 +1,35 @@
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.concurrent.GlobalEventExecutor;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 /**
  * Created by lawrencew on 11/10/2015.
  */
-public class ChatServerHandler extends SimpleChannelInboundHandler<String> {
+public class ChatServerHandler extends Thread{
 
-    private static final ChannelGroup channels = new DefaultChannelGroup("clients", GlobalEventExecutor.INSTANCE);
-
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception{
-        Channel incoming = ctx.channel();
-        for(Channel channel : channels)
-        {
-            channel.write("[SERVER]"+ incoming.remoteAddress()+" has joined!\n");
-
-        }
-        channels.add(ctx.channel());
-    }
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception
+    private Socket socket;
+    public ChatServerHandler(Socket socket)
     {
-        Channel incoming = ctx.channel();
-        for(Channel channel : channels)
-        {
-            channel.write("[SERVER]"+ incoming.remoteAddress()+" has left!\n");
-
-        }
-        channels.remove(ctx.channel());
+        this.socket=socket;
     }
+    public void run()
+    {
+        try {
+            String message;
+            PrintWriter pw = new PrintWriter(socket.getOutputStream(),true);
+            BufferedReader bf = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println("User "+bf.readLine()+" is now connected to the server");
 
-
-
-    @Override
-    protected void messageReceived(ChannelHandlerContext arg0, String s) throws Exception {
-        Channel incoming = arg0.channel();
-
-        for(Channel channel : channels)
-        {
-            if(channel != incoming)
-            {
-                channel.write("["+incoming.remoteAddress()+"]"+s +"\n");
-
-            }
+           while((message = bf.readLine())!=null)
+           {
+               System.out.println("incoming message "+message);
+               pw.println("Serve rechoing Client message "+message);
+           }
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("called");
     }
 }
