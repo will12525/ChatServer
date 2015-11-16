@@ -20,7 +20,6 @@ public class ClientThread extends Thread{
             bReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pWriter = new PrintWriter(socket.getOutputStream(),true);
             username = bReader.readLine();
-            data.addMessage("User " + username + " has joined",this);
         }catch(IOException e)
         {
             e.printStackTrace();
@@ -30,7 +29,6 @@ public class ClientThread extends Thread{
 
     public void write(String message)
     {
-        System.out.println("DEBUG HELLO");
         pWriter.println(message);
     }
 
@@ -38,30 +36,35 @@ public class ClientThread extends Thread{
     {
         String message;
 
-            while(true)
-            {
-                try {
-                    message = bReader.readLine();
-                   if(message!=null)
-                   {
-                       data.addMessage(message, this);
-                   }
-                }
-                catch(IOException e)
+        while(true)
+        {
+            try {
+                if((message=bReader.readLine())!=null)
                 {
-
+                    if(message.equals("exit"))
+                    {
+                        data.addToRemoveClients(this);
+                    }
+                    else {
+                        data.addMessage(message, this);
+                    }
                 }
             }
+            catch(IOException e)
+            {
+
+            }
+        }
     }
 
-   /* public void close()
+    public void close()
     {
         try {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }*/
+    }
 
     public String getUsername()
     {

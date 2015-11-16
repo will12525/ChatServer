@@ -9,10 +9,9 @@ import java.util.List;
 public class DataHolder extends Thread {
     List<String> messages = new ArrayList<String>();
     List<ClientThread> clients = new ArrayList<ClientThread>();
-    private HashMap<ClientThread,String> messageFrom = new HashMap<ClientThread, String>();
-    private boolean newMessage = false;
+    List<ClientThread> clientsToRemove = new ArrayList<ClientThread>();
+    List<ClientThread> clientMessageTrack = new ArrayList<ClientThread>();
     private boolean serverRunning = false;
-
 
     DataHolder(boolean serverRunning)
     {
@@ -22,16 +21,23 @@ public class DataHolder extends Thread {
     public void run()
     {
         while(serverRunning) {
-
-            //System.out.println("Client size: "+ clients.size());
-           // System.out.println("Messages size: "+messages.size());
+            if(clientsToRemove.size()>0)
+            {
+                removeClients();
+            }
             if (messages.size()>0) {
+
                 String message = messages.get(0);
                 for (ClientThread client : clients) {
-                    client.write(message);
+                    if (!checkSimilar(client)) {
+                        client.write(message);
+                    }
+
                 }
                 removeMessage(0);
-                newMessage = false;
+                if (clientMessageTrack.size() > 0) {
+                    clientMessageTrack.remove(0);
+                }
             }
             try {
                 Thread.sleep(200);
@@ -40,26 +46,50 @@ public class DataHolder extends Thread {
             }
         }
     }
-
-    public void removeClient(ClientThread client)
+    public boolean checkSimilar(ClientThread client)
     {
-        clients.remove(client);
+        return clientMessageTrack.size() > 0 && clientMessageTrack.get(0) == client;
+    }
+
+    public void addToRemoveClients(ClientThread client)
+    {
+        clientsToRemove.add(client);
+    }
+    public void removeClients()
+    {
+        for(ClientThread client : clientsToRemove)
+        {
+            addMessage(client.getUsername()+" has left the channel");
+            System.out.println(client.getUsername()+" has left the channel");
+            client.close();
+        }
+        clients.removeAll(clientsToRemove);
+        clientsToRemove.clear();
     }
     public void addClient(ClientThread client)
     {
+        addMessage("User " + client.getUsername() + " has joined");
+        System.out.println("User " + client.getUsername() + " has joined");
         clients.add(client);
     }
-
+    public boolean checkForClient(ClientThread client)
+    {
+        return clients.contains(client);
+    }
     public void removeMessage(int index)
     {
         messages.remove(index);
     }
     public void addMessage(String theMessage,ClientThread client)
     {
-        System.out.println("DEBUG "+theMessage);
-        newMessage = true;
-        messageFrom.put(client,theMessage);
-        messages.add(theMessage);
+        clientMessageTrack.add(client);
+        messages.add(client.getUsername()+": "+theMessage);
+        System.out.println(client.getUsername()+": "+theMessage);
+    }
+    //usually from server
+    public void addMessage(String theMessage)
+    {
+        messages.add("Server: "+theMessage);
     }
 
 }
