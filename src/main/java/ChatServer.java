@@ -22,7 +22,7 @@ public class ChatServer {
 
         while(running) {
             Socket socket = sSocket.accept();
-            ServerThread clientThread = new ServerThread(socket,data);
+            ClientThread clientThread = new ClientThread(socket,data);
 
             if(!clients.contains(socket))
             {

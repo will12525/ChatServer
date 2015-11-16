@@ -8,8 +8,8 @@ import java.util.List;
  */
 public class DataHolder extends Thread {
     List<String> messages = new ArrayList<String>();
-    List<ServerThread> clients = new ArrayList<ServerThread>();
-    private HashMap<ServerThread,String> messageFrom = new HashMap<ServerThread, String>();
+    List<ClientThread> clients = new ArrayList<ClientThread>();
+    private HashMap<ClientThread,String> messageFrom = new HashMap<ClientThread, String>();
     private boolean newMessage = false;
     private boolean serverRunning = false;
 
@@ -24,10 +24,10 @@ public class DataHolder extends Thread {
         while(serverRunning) {
 
             //System.out.println("Client size: "+ clients.size());
-            System.out.println("Messages size: "+messages.size());
+           // System.out.println("Messages size: "+messages.size());
             if (messages.size()>0) {
                 String message = messages.get(0);
-                for (ServerThread client : clients) {
+                for (ClientThread client : clients) {
                     client.write(message);
                 }
                 removeMessage(0);
@@ -41,11 +41,11 @@ public class DataHolder extends Thread {
         }
     }
 
-    public void removeClient(ServerThread client)
+    public void removeClient(ClientThread client)
     {
         clients.remove(client);
     }
-    public void addClient(ServerThread client)
+    public void addClient(ClientThread client)
     {
         clients.add(client);
     }
@@ -54,7 +54,7 @@ public class DataHolder extends Thread {
     {
         messages.remove(index);
     }
-    public void addMessage(String theMessage,ServerThread client)
+    public void addMessage(String theMessage,ClientThread client)
     {
         System.out.println("DEBUG "+theMessage);
         newMessage = true;
