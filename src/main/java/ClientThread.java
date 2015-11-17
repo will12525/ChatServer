@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -14,6 +15,12 @@ public class ClientThread extends Thread{
 
     public ClientThread(final Socket socket, final DataHolder data)
     {
+        //System.out.println("new call");
+        //ClientThread clientThread = new ClientThread(socket,data);
+
+
+
+
         this.socket=socket;
         this.data=data;
         try{
@@ -24,6 +31,7 @@ public class ClientThread extends Thread{
         {
             e.printStackTrace();
         }
+        data.addClient(this);
         this.start();
     }
 

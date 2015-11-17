@@ -26,13 +26,13 @@ public class ChatServer extends Thread{
         this.start();
 
         while(running) {
-            Socket socket = sSocket.accept();
-            ClientThread clientThread = new ClientThread(socket,data);
+           // Socket socket = sSocket.accept();
+             new ClientThread(sSocket.accept(),data);
 
-            if(!data.checkForClient(clientThread))
+            /*if(!data.checkForClient(clientThread))
             {
                 data.addClient(clientThread);
-            }
+            }*/
         }
 
     }
